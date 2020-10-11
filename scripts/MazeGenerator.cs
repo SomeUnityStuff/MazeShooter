@@ -246,9 +246,9 @@ public class MazeGenerator : MonoBehaviour
         cell_x_size = 1.0f * Screen.width / ScreenToCellRatio;
         cell_y_size = 1.0f * Screen.height / ScreenToCellRatio;
         vert_wall_width = cell_x_size / CellToWallRatio;
-        hor_wall_height = cell_x_size / CellToWallRatio;
+        hor_wall_height = cell_y_size / CellToWallRatio;
         vert_wall_height = cell_y_size - 0.5f * hor_wall_height;
-        hor_wall_width = cell_y_size - 0.5f * vert_wall_width;
+        hor_wall_width = cell_x_size - 0.5f * vert_wall_width;
         GenerateCells();
         GenerateHorizontalWalls();
         GenerateVerticalWalls();
