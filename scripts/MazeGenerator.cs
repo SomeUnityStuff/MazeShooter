@@ -9,7 +9,7 @@ public class MazeGenerator : MonoBehaviour
     [SerializeField]
     GameObject HorizontalWallPrefab;
     [SerializeField]
-    float ScreenToCellRatio;
+    int ScreenToCellRatio;
     [SerializeField]
     float CellToWallRatio;
    
@@ -89,59 +89,12 @@ public class MazeGenerator : MonoBehaviour
         return res_cell;
     }
 
-    int FindBotNeighbour(float this_x, float this_y, List<Cell> cells){
-        int idx = -1;
-        for(int i=0; i<cells.Count; i++){
-            if(Mathf.Abs(cells[i].x_center - this_x)< 1.0e-3f &&
-               Mathf.Abs(cells[i].y_center - this_y + cells[i].y_size) < 1.0e-3f)
-            {
-                idx = i;
-            }
-        }
-        return idx;
-    }
-
-    int FindRightNeighbour(float this_x, float this_y, List<Cell> cells){
-        int idx = -1;
-        for (int i = 0; i < cells.Count; i++){
-            if (Mathf.Abs(cells[i].x_center - this_x - cells[i].x_size) < 1.0e-3f &&
-               Mathf.Abs(cells[i].y_center - this_y) < 1.0e-3f)
-            {
-                idx = i;
-            }
-        }
-        return idx;
-    }
-
-    int FindTopNeighbour(float this_x, float this_y, List<Cell> cells){
-        int idx = -1;
-        for (int i = 0; i < cells.Count; i++){
-            if (Mathf.Abs(cells[i].x_center - this_x) < 1.0e-3f &&
-               Mathf.Abs(cells[i].y_center - this_y - cells[i].y_size) < 1.0e-3f)
-            {
-                idx = i;
-            }
-        }
-    return idx;
-    }
-
-    int FindLeftNeighbour(float this_x, float this_y, List<Cell> cells){
-        int idx = -1;
-        for (int i = 0; i < cells.Count; i++){
-            if (Mathf.Abs(cells[i].x_center - this_x + cells[i].x_size) < 1.0e-3f &&
-               Mathf.Abs(cells[i].y_center - this_y) < 1.0e-3f){
-                idx = i;
-            }
-        }
-        return idx;
-    }
-
     void MarkNeighbours(List<Cell> cells){
-        for(int i=0; i<cells.Count; i++){
-            cells[i].bot_neighbour = FindBotNeighbour(cells[i].x_center, cells[i].y_center, cells);
-            cells[i].right_neighbour = FindRightNeighbour(cells[i].x_center, cells[i].y_center, cells);
-            cells[i].top_neighbour = FindTopNeighbour(cells[i].x_center, cells[i].y_center, cells);
-            cells[i].left_neighbour = FindLeftNeighbour(cells[i].x_center, cells[i].y_center, cells);
+        for (int i = 0; i < cells.Count; i++){
+            cells[i].bot_neighbour = i % ScreenToCellRatio != 0 ? i-1 : -1;
+            cells[i].top_neighbour = (i+1)%ScreenToCellRatio!=0 ? i+1: -1;
+            cells[i].right_neighbour = (i < cells.Count - ScreenToCellRatio) ? i+ScreenToCellRatio : -1;
+            cells[i].left_neighbour = (i>ScreenToCellRatio-1) ? i-ScreenToCellRatio : -1;
         }
     }
 
@@ -221,17 +174,16 @@ public class MazeGenerator : MonoBehaviour
         float cell_x_size = 1.0f * Screen.width / ScreenToCellRatio;
         float cell_y_size = 1.0f * Screen.height / ScreenToCellRatio;
         List<Cell> cells = new List<Cell>();
-        float curr_x_coor = 0.5f * cell_x_size;
-        while (curr_x_coor < Screen.width)
-        {
-            float curr_y_coor = 0.5f * cell_y_size;
-            while (curr_y_coor < Screen.height)
-            {
+        //float curr_x_coor = 0.5f * cell_x_size;
+        for(int i=0; i<ScreenToCellRatio; i++){
+            float curr_x_coor = (i + 0.5f) * cell_x_size;
+            for(int j=0; j<ScreenToCellRatio; j++){
+                float curr_y_coor = (j + 0.5f) * cell_y_size;
                 cells.Add(MakeCell(curr_x_coor, curr_y_coor));
-                curr_y_coor += cell_y_size;
             }
-            curr_x_coor += cell_x_size;
         }
+        //MARKING IS BASED ON THE ORDER OF CELL CREATION!
+        MarkNeighbours(cells);
         return cells;
     }
 
@@ -240,26 +192,11 @@ public class MazeGenerator : MonoBehaviour
     {
 
         List<Cell> cells = GenerateCells();
-        MarkNeighbours(cells);
+        //List<Cell> hor_walls = GenerateHorizontalWalls();
+        //List<Cell> vert_walls = GenerateVerticalWalls();
+        //MarkNeighbours(cells);
         BuildMaze(cells);
 
-        /*
-        float cell_x_size = 1.0f * Screen.width / ScreenToCellRatio;
-        float cell_y_size = 1.0f * Screen.height / ScreenToCellRatio;
-        float x = Screen.width / 2.0f;
-        float y = Screen.height / 2.0f;
-        MakeCell(x, y);
-        //MakeCell(x + cell_x_size, y);
-        //MakeCell(x, y + cell_y_size);
-        Vector3 pos_1 = new Vector3(1, 1, -Camera.main.transform.position.z);
-        Vector3 w_pos_1 = Camera.main.ScreenToWorldPoint(pos_1);
-        print("POS_1 = " + pos_1);
-        print("W_POS_1 = " + w_pos_1);
-        Vector3 pos_2 = new Vector3(10, 10, -Camera.main.transform.position.z);
-        Vector3 w_pos_2 = Camera.main.ScreenToWorldPoint(pos_2);
-        print("POS_2 = " + pos_2);
-        print("W_POS_2 = " + w_pos_2);
-        */
 
     }
 
